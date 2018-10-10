@@ -112,14 +112,13 @@ public class Main {
         Thread metadataThread = new MetadataThread(metadataDelay);
         metadataThread.start();
 
-        QuitThread thread = new QuitThread(dieAfterMs);
-        thread.start();
+        QuitThread quitThread = new QuitThread(dieAfterMs);
+        quitThread.start();
 
-        System.out.println("enter to quit");
-        System.in.read();
+        server.join();
 
         stsThread.stop();
         metadataThread.stop();
-        server.stop();
+        quitThread.stop();
     }
 }

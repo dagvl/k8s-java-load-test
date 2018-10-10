@@ -1,0 +1,6 @@
+
+.idea/
+Dockerfile.local
+dependency-reduced-pom.xml
+k8s-java-load-test.iml
+target/

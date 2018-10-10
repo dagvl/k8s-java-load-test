@@ -42,6 +42,16 @@ public class Main {
                 .hasArg()
                 .build());
 
+        options.addOption(Option.builder()
+                .longOpt("listen-address")
+                .hasArg()
+                .build());
+
+        options.addOption(Option.builder()
+                .longOpt("die-after-ms")
+                .hasArg()
+                .build());
+
         HelpFormatter formatter = new HelpFormatter();
         CommandLine cmd = null;
         CommandLineParser parser = new DefaultParser();
@@ -57,16 +67,35 @@ public class Main {
         }
 
 
-        int stsSleepMs = Integer.parseInt(cmd.getOptionValue("sts-sleep-ms"));
-        int metadataSleepMs = Integer.parseInt(cmd.getOptionValue("metadata-sleep-ms"));
-        main.Run(stsSleepMs, metadataSleepMs);
+        int stsSleepMs = 5000;
+        if(cmd.hasOption("sts-sleep-ms")) {
+            stsSleepMs = Integer.parseInt(cmd.getOptionValue("sts-sleep-ms"));
+        }
+
+        int metadataSleepMs = 5000;
+        if(cmd.hasOption("metadata-sleep-ms")) {
+            Integer.parseInt(cmd.getOptionValue("metadata-sleep-ms"));
+        }
+
+        int listenAddress = 8080;
+        if(cmd.hasOption("listen-address")) {
+            listenAddress = Integer.parseInt(cmd.getOptionValue("listen-address"));
+        }
+
+
+        int dieAfterMs = 180000;
+        if(cmd.hasOption("die-after-ms")) {
+            dieAfterMs = Integer.parseInt(cmd.getOptionValue("die-after-ms"));
+        }
+
+        main.Run(stsSleepMs, metadataSleepMs, listenAddress, dieAfterMs);
     }
 
 
-    private void Run(int metadataDelay, int stsDelay) throws Exception {
+    private void Run(int metadataDelay, int stsDelay, int listenAddress, int dieAfterMs) throws Exception {
         server = new Server();
         ServerConnector connector = new ServerConnector(server);
-        connector.setPort(8080);
+        connector.setPort(listenAddress);
 
         ServletHandler handler = new ServletHandler();
         handler.addServletWithMapping(OkServlet.class, "/healthcheck");
@@ -76,14 +105,15 @@ public class Main {
         server.setHandler(handler);
 
         server.start();
-        //server.join();
-
 
         Thread stsThread = new StsThread(stsDelay);
         stsThread.start();
 
         Thread metadataThread = new MetadataThread(metadataDelay);
         metadataThread.start();
+
+        QuitThread thread = new QuitThread(dieAfterMs);
+        thread.start();
 
         System.out.println("enter to quit");
         System.in.read();

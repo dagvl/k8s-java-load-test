@@ -17,6 +17,8 @@ public class MetadataThread extends Thread {
     @Override
     public void run() {
         super.run();
+        System.out.println("Running ec2Metadata role every " + sleep + "ms.");
+
         try {
             while (true) {
                 doThings();

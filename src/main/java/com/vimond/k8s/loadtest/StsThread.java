@@ -17,6 +17,7 @@ public class StsThread extends Thread {
     @Override
     public void run() {
         super.run();
+        System.out.println("Running sts:Assume role every " + sleep + "ms.");
         try {
             while (true) {
                 doThings();
